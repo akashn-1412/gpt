@@ -1,0 +1,189 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Query Strategy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #6f2828;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .download-link {
+            color: #440811;
+            text-decoration: none;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        form {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: #a52929;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        form label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        form input:invalid {
+            border-color: red;
+        }
+        form input:valid {
+            border-color: green;
+        }
+        form button {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: #a00e0e;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        form button:hover {
+            background-color: #440811;
+        }
+        #strategy-output {
+            max-width: 600px;
+            margin: auto;
+            margin-top: 20px;
+            padding: 20px;
+            background: #e84c4c;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .heading {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .content {
+            margin: 10px 0;
+        }
+        .loading {
+            text-align: center;
+            color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <h1>Business Queries Strategy</h1>
+    <form id="business-queries-form" aria-label="Business Query Form">
+        <label for="companyName">Company Name:</label>
+        <input type="text" id="companyName" name="companyName" required aria-required="true">
+
+        <label for="averageSales">Average Sales (in Rupees):</label>
+        <input type="number" id="averageSales" name="averageSales" required aria-required="true" min="1">
+
+        <label for="averageSalesUnits">Average Sales Units:</label>
+        <input type="number" id="averageSalesUnits" name="averageSalesUnits" required aria-required="true" min="1">
+
+        <label for="followersInstagram">Followers on Instagram:</label>
+        <input type="number" id="followersInstagram" name="followersInstagram" required aria-required="true" min="0">
+
+        <label for="followersLinkedIn">Followers on LinkedIn:</label>
+        <input type="number" id="followersLinkedIn" name="followersLinkedIn" required aria-required="true" min="0">
+
+        <label for="followersTwitter">Followers on Twitter:</label>
+        <input type="number" id="followersTwitter" name="followersTwitter" required aria-required="true" min="0">
+
+        <label for="companyOverview">Company Overview:</label>
+        <input type="text" id="companyOverview" name="companyOverview" required aria-required="true">
+
+        <label for="niche">Niche of the Company:</label>
+        <input type="text" id="niche" name="niche" required aria-required="true">
+
+        <label for="targetClients">Target Clients:</label>
+        <input type="text" id="targetClients" name="targetClients" required aria-required="true">
+
+        <label for="averageAdBudget">Average Ad Budget (in Rupees):</label>
+        <input type="number" id="averageAdBudget" name="averageAdBudget" required aria-required="true" min="1">
+
+        <label for="returnOnAds">Return on Ads:</label>
+        <input type="text" id="returnOnAds" name="returnOnAds" required aria-required="true">
+
+        <button type="submit">Generate Strategy</button>
+    </form>
+    
+    <div id="strategy-output"></div>
+
+    <script>
+        document.getElementById('business-queries-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            // Display loading message
+            document.getElementById('strategy-output').innerHTML = '<p class="loading">Generating strategy, please wait...</p>';
+
+            const formData = {
+                companyName: document.getElementById('companyName').value,
+                averageSales: document.getElementById('averageSales').value,
+                averageSalesUnits: document.getElementById('averageSalesUnits').value,
+                followersInstagram: document.getElementById('followersInstagram').value,
+                followersLinkedIn: document.getElementById('followersLinkedIn').value,
+                followersTwitter: document.getElementById('followersTwitter').value,
+                companyOverview: document.getElementById('companyOverview').value,
+                niche: document.getElementById('niche').value,
+                targetClients: document.getElementById('targetClients').value,
+                averageAdBudget: document.getElementById('averageAdBudget').value,
+                returnOnAds: document.getElementById('returnOnAds').value
+            };
+
+            try {
+                const response = await fetch('/business-queries', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                const result = await response.json();
+                const content = result.strategy;
+                const formattedContent = formatContent(content);
+                document.getElementById('strategy-output').innerHTML = formattedContent +`
+                    <a class="download-link" id="download-link" href="/pdfs/${result.pdf_filename}" download>Download PDF</a>
+                `;
+            } catch (error) {
+                document.getElementById('strategy-output').innerHTML = `<p style="color: red;">An error occurred: ${error.message}</p>`;
+            }
+        });
+
+        function formatContent(content) {
+            const removeBoldPattern = /\*\*/g;
+            let cleanedContent = content.replace(removeBoldPattern, '');
+            const lines = cleanedContent.split('\n');
+            let html = '';
+            let currentHeading = '';
+
+            lines.forEach(line => {
+                if (line.includes(':')) {
+                    const [heading, text] = line.split(':');
+                    currentHeading = heading.trim();
+                    html += `<div class="heading">${currentHeading}</div><div class="content">${text.trim()}</div>`;
+                } else if (line.startsWith('-')) {
+                    html += `<div class="content"><strong>-</strong> ${line.substring(1).trim()}</div>`;
+                } else {
+                    if (currentHeading) {
+                        html += `<div class="content">${line.trim()}</div>`;
+                    }
+                }
+            });
+
+            return html;
+        }
+    </script>
+</body>
+</html>
